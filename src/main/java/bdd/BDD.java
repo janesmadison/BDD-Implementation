@@ -6,29 +6,39 @@ import java.util.Map;
 public class BDD
 {
 
-  Map<BDDNode, String> map;
-  Map<String,BDDNode> inverseMap;
+  Map<BDDNode, String> mapNodes;
+  Map<String,BDDNode> mapAttributes;
 
 //constructor
   public BDD() {
-    map = new HashMap<BDDNode, String>();
-    inverseMap = new HashMap<String,BDDNode>();
+    mapNodes = new HashMap<BDDNode, String>();      //these are wrong.. will need to convert these to something else to hold multiple types in the key and values
+    mapAttributes = new HashMap<String,BDDNode>();
   }
+  
+ 
+ public BDDNode mk(String v, BDDNode low, BDDNode high) {
+	 if(low.isEquivalent(high)) {
+		 return low;
+	 } //else if(member(H,i,l,h)) {
+	 // return lookUp(H,i,l,h)
+	 // } else {
+	 // create a new node in T and insert it also into H
+	return null;	 
+ }
+ 
+// private Boolean nodeExists(String v, BDDNode low, BDDNode high) {
+//	 
+// }
 
 //Boolean Functions
-static Boolean and(Boolean x1, Boolean x2) {
+Boolean and(Boolean x1, Boolean x2) {
   return x1 && x2;
 }
-static Boolean or(Boolean x1, Boolean x2) {
+Boolean or(Boolean x1, Boolean x2) {
   return x1 || x2;
 }
-static Boolean xor(Boolean x1, Boolean x2) {
+Boolean xor(Boolean x1, Boolean x2) {
   return (x1 && !x2) || (!x1 && x2);
-}
-
-Boolean isEquivalent(BDD other) {
-  // if()
-  return true;
 }
 
 }
