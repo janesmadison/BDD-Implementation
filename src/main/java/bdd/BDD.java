@@ -1,35 +1,51 @@
 package bdd;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
+import java.util.function.Supplier;
 
 public class BDD
 {
 
-  Map<BDDNode, String> mapNodes;
-  Map<String,BDDNode> mapAttributes;
+private WeakHashMap<BDDNode, WeakReference<BDDNode>> bddMap = new WeakHashMap<>();
 
 //constructor
   public BDD() {
-    mapNodes = new HashMap<BDDNode, String>();      //these are wrong.. will need to convert these to something else to hold multiple types in the key and values
-    mapAttributes = new HashMap<String,BDDNode>();
   }
   
- 
- public BDDNode mk(String v, BDDNode low, BDDNode high) {
-	 if(low.isEquivalent(high)) {
-		 return low;
-	 } //else if(member(H,i,l,h)) {
-	 // return lookUp(H,i,l,h)
-	 // } else {
-	 // create a new node in T and insert it also into H
-	return null;	 
+ public BDDNode addVariable(String v) {
+	 BDDNode falseLeaf = new BDDNode("false", null, null);
+	 BDDNode trueLeaf = new BDDNode("true", null, null);
+	 BDDNode n = new BDDNode(v, falseLeaf, trueLeaf);
+	 n = this.mk(v, n.low, n.high);
+	 return n;
  }
  
-// private Boolean nodeExists(String v, BDDNode low, BDDNode high) {
-//	 
-// }
+ private BDDNode mk(String v, BDDNode low, BDDNode high) {
+	 if(low.isEquivalent(high)) {
+		 return low;
+	 } 
+	BDDNode newNode = new BDDNode(v, low, high);
+	return lookupCache(bddMap, newNode, () -> newNode);
+ }
+ 
+ //Written by Christian Kästner
+ private <K, V> V lookupCache(WeakHashMap<K, WeakReference<V>> cache, K key, Supplier<V> newValue) {
+     WeakReference<V> v = cache.get(key);
+     V val = null;
+     if (v != null) {
+         val = v.get();
+     }
+     if (val != null)
+         return val;
 
+     val = newValue.get();
+     System.out.println(key.toString());
+     cache.put(key, new WeakReference<V>(val));
+     return val;
+ }
+ 
+ 
 //Boolean Functions
 Boolean and(Boolean x1, Boolean x2) {
   return x1 && x2;

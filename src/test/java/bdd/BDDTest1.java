@@ -8,7 +8,10 @@ public class BDDTest1 {
     @Test
     public void test() {
 
-      BDD x = new BDD();
+    BDD tree = new BDD();
+    BDDNode x =  tree.addVariable("x");
+    BDDNode y =  tree.addVariable("y");
+    BDDNode z =  tree.addVariable("z");
     }
 
 }
