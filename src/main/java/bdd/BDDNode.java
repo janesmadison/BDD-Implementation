@@ -5,12 +5,14 @@ public class BDDNode
   BDDNode high;
   BDDNode low;
   String v; //variable name ex. x1
+  int hash;
 
 //constructor
 BDDNode(String v, BDDNode high, BDDNode low){
     this.high = high;
     this.low =low;
     this.v = v;
+    this.hash = v.hashCode() + 31 * (low == null ? 0 : low.hash) + 27 * (high == null ? 0 : high.hash);
 }
 
 Boolean isEquivalent(BDDNode other) {
@@ -20,20 +22,18 @@ Boolean isEquivalent(BDDNode other) {
 	  return false;
 	}
 
-//Boolean isLowLeaf(){
-//  if(this.low instanceof BDDNode) {
-//    if(this.low.nodeID == 0 || this.low.nodeID == 1)
-//      return true;
-//  }
-//  return false;
-//}
-//
-//Boolean isHighLeaf(){
-//  if(this.high instanceof BDDNode) {
-//    if(this.high.nodeID == 0 || this.high.nodeID == 1)
-//      return true;
-//  }
-//  return false;
-//}
+Boolean isLeafNode(){
+    if(this.v.equals("true") || this.v.equals("false")) {
+    	return true;
+    } else {
+    	return false;
+    }    
+}
+
+ int getID() {
+    if (this.v.equals("true")) return 1;
+    else if (this.v.equals("false")) return 0;
+    else return Math.abs(this.hash);
+}
 
 }

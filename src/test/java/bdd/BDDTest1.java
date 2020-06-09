@@ -10,8 +10,10 @@ public class BDDTest1 {
 
     BDD tree = new BDD();
     BDDNode x =  tree.addVariable("x");
-    BDDNode y =  tree.addVariable("y");
+    BDDNode x2 =  tree.addVariable("y");
     BDDNode z =  tree.addVariable("z");
+    
+    tree.printDot(x);
     }
 
 }
