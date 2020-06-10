@@ -76,7 +76,7 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
 	     else if (two.isLeafNode() || (one.v.compareTo(two.v) > 0))
 	         newNode = mk(one.v, applyAnd(one.low, two), applyAnd(one.high, two));
 	     else
-	         newNode = mk(one.v, applyAnd(one, two.low), applyAnd(one, two.high));
+	         newNode = mk(two.v, applyAnd(one, two.low), applyAnd(one, two.high));
 
 	     pairCache.put(pair, newNode);
 	     return newNode;
@@ -127,7 +127,6 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
      this.high = high;
      this.low =low;
      this.v = v;
-     System.out.println("node constructed with:  " + v);
      this.hash = v.hashCode() + 31 * (low == null ? 0 : low.hash) + 27 * (high == null ? 0 : high.hash);
  }
 
