@@ -12,8 +12,6 @@ public class BDDManager
 {
 
 private WeakHashMap<BDDNode, WeakReference<BDDNode>> bddMap = new WeakHashMap<>();
-private WeakHashMap<BDDPair,WeakReference<BDDNode>> andCache = new WeakHashMap<>();
-private HashMap<BDDPair,BDDNode> pairCache = new HashMap<>();
 
 private BDDNode TRUE = new BDDNode("true", null, null) {
 
@@ -30,6 +28,8 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
         return true;
     }
 };
+
+
 
 //constructor
   public BDDManager() {
@@ -62,21 +62,22 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
      return val;
  }
  
- BDDNode applyAnd(BDDNode one, BDDNode two) {
+ BDDNode apply(Operator op, BDDNode one, BDDNode two) {
 	 
+	 HashMap<BDDPair,BDDNode> pairCache = new HashMap<>();
 	 	 BDDPair pair = new BDDPair(one, two);
 	     BDDNode found = pairCache.get(pair);
 	     if (found != null)
 	         return found;
 	     BDDNode newNode;
 	     if (one.isLeafNode() && two.isLeafNode())
-	         newNode = logicAnd(one.isEquivalent(TRUE), two.isEquivalent(TRUE)) ? TRUE : FALSE;
+	         newNode = op.applyOperator(one.isEquivalent(TRUE), two.isEquivalent(TRUE)) ? TRUE : FALSE;
 	     else if (one.v.equals(two.v))
-	         newNode = mk(one.v, applyAnd(one.low, two.low), applyAnd(one.high, two.high));
+	         newNode = mk(one.v, apply(op, one.low, two.low), apply(op, one.high, two.high));
 	     else if (two.isLeafNode() || (one.v.compareTo(two.v) > 0))
-	         newNode = mk(one.v, applyAnd(one.low, two), applyAnd(one.high, two));
+	         newNode = mk(one.v, apply(op, one.low, two), apply(op, one.high, two));
 	     else
-	         newNode = mk(two.v, applyAnd(one, two.low), applyAnd(one, two.high));
+	         newNode = mk(two.v, apply(op, one, two.low), apply(op, one, two.high));
 
 	     pairCache.put(pair, newNode);
 	     return newNode;
@@ -85,7 +86,6 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
 //Written by Christian Kästner (modified)
 //Can be used in conjunction with http://www.webgraphviz.com/ to print BDD
  public void printDot(BDDNode bdd) {
-
 
      System.out.println("digraph G {");
      System.out.println("0 [shape=box, label=\"FALSE\", style=filled, shape=box, height=0.3, width=0.3];");
@@ -109,11 +109,7 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
 
      System.out.println("}");
  }
- 
- private Boolean logicAnd(Boolean one, Boolean two) {
-	return one && two;
- }
- 
+
  //=============================================================================================================================================
  public class BDDNode
  {
@@ -148,7 +144,11 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
  }
   
   public BDDNode and(BDDNode other) {
-	  return lookupCache(andCache, new BDDPair(this, other), () -> applyAnd(this,other));
+	  return lookupCache(AND.cache() , new BDDPair(this, other), () -> apply(AND, this, other));
+  }
+  
+  public BDDNode or(BDDNode other) {
+	  return lookupCache(OR.cache() , new BDDPair(this, other), () -> apply(OR, this, other));
   }
 
  }
@@ -176,4 +176,42 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
 	}
  
  //===========================================================================================================================================
+ 
+ private static abstract class Operator {
+	    public abstract boolean applyOperator(boolean left, boolean right);
+
+	    abstract WeakHashMap<BDDPair, WeakReference<BDDNode>> cache();
+
+	}
+
+	private static Operator AND = new Operator() {
+
+	    @Override
+	    public boolean applyOperator(boolean left, boolean right) {
+	        return left && right;
+	    }
+
+	    private WeakHashMap<BDDPair, WeakReference<BDDNode>> cache = new WeakHashMap<>();
+
+	    @Override
+	    WeakHashMap<BDDPair, WeakReference<BDDNode>> cache() {
+	        return cache;
+	    }
+	};
+
+	private static Operator OR = new Operator() {
+
+	    @Override
+	    public boolean applyOperator(boolean left, boolean right) {
+	        return left || right;
+	    }
+
+	    private WeakHashMap<BDDPair, WeakReference<BDDNode>> cache = new WeakHashMap<>();
+
+	    @Override
+	    WeakHashMap<BDDPair, WeakReference<BDDNode>> cache() {
+	        return cache;
+	    }
+	};
+//===========================================================================================================================================
 }
