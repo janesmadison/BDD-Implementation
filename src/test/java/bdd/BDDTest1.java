@@ -13,8 +13,6 @@ public class BDDTest1 {
     BDDManager tree = new BDDManager();
     BDDNode x =  tree.addVariable("x");
     BDDNode y =  tree.addVariable("y");
-    BDDNode z =  tree.addVariable("z");
-    
     tree.printDot(x.and(y));
     }
 

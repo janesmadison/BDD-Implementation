@@ -12,8 +12,8 @@ public class BDDManager
 {
 
 private WeakHashMap<BDDNode, WeakReference<BDDNode>> bddMap = new WeakHashMap<>();
+private WeakHashMap<BDDPair,WeakReference<BDDNode>> andCache = new WeakHashMap<>();
 private HashMap<BDDPair,BDDNode> pairCache = new HashMap<>();
-private HashMap<BDDPair,BDDNode> andCache = new HashMap<>();
 
 private BDDNode TRUE = new BDDNode("true", null, null) {
 
@@ -36,14 +36,11 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
   }
   
  public BDDNode addVariable(String v) {
-	 BDDNode n = new BDDNode(v, FALSE, TRUE);
-	 n = mk(v, n.low, n.high);
-	 return n;
+	 return mk(v, FALSE, TRUE);
  }
  
  private BDDNode mk(String v, BDDNode low, BDDNode high) {
 	 if(low.isEquivalent(high)) {
-		 System.out.println(low + "is a repeat");
 		 return low;
 	 } 
 	BDDNode newNode = new BDDNode(v, low, high);
@@ -66,15 +63,14 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
  }
  
  BDDNode applyAnd(BDDNode one, BDDNode two) {
-//	 	BDDNode newNode = BDDManager.lookupCache(BDDManager.andCache, new BDDPair(this, other) , );
-	 	
+	 
 	 	 BDDPair pair = new BDDPair(one, two);
 	     BDDNode found = pairCache.get(pair);
 	     if (found != null)
 	         return found;
 	     BDDNode newNode;
 	     if (one.isLeafNode() && two.isLeafNode())
-	         newNode = logicAnd(one == TRUE, two == TRUE) ? TRUE : FALSE;
+	         newNode = logicAnd(one.isEquivalent(TRUE), two.isEquivalent(TRUE)) ? TRUE : FALSE;
 	     else if (one.v.equals(two.v))
 	         newNode = mk(one.v, applyAnd(one.low, two.low), applyAnd(one.high, two.high));
 	     else if (two.isLeafNode() || (one.v.compareTo(two.v) > 0))
@@ -127,10 +123,11 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
    int hash;
 
  //constructor
- BDDNode(String v, BDDNode high, BDDNode low){
+ BDDNode(String v, BDDNode low, BDDNode high){
      this.high = high;
      this.low =low;
      this.v = v;
+     System.out.println("node constructed with:  " + v);
      this.hash = v.hashCode() + 31 * (low == null ? 0 : low.hash) + 27 * (high == null ? 0 : high.hash);
  }
 
@@ -146,13 +143,13 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
  }
 
   int getID() {
-     if (this == TRUE) return 1;
-     else if (this == FALSE) return 0;
+     if (this.isEquivalent(TRUE)) return 1;
+     else if (this.isEquivalent(FALSE)) return 0;
      else return Math.abs(this.hash);
  }
   
   public BDDNode and(BDDNode other) {
-	  return lookupCache(andCache, new BDDPair(this, other), applyAnd(this,other));
+	  return lookupCache(andCache, new BDDPair(this, other), () -> applyAnd(this,other));
   }
 
  }
