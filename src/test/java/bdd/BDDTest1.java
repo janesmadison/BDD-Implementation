@@ -2,18 +2,20 @@ package bdd;
 
 import org.junit.jupiter.api.Test;
 
+import bdd.BDDManager.BDDNode;
+
 public class BDDTest1 {
 
 
     @Test
     public void test() {
 
-    BDD tree = new BDD();
+    BDDManager tree = new BDDManager();
     BDDNode x =  tree.addVariable("x");
-    BDDNode x2 =  tree.addVariable("y");
+    BDDNode y =  tree.addVariable("y");
     BDDNode z =  tree.addVariable("z");
     
-    tree.printDot(x);
+    tree.printDot(x.and(y));
     }
 
 }
