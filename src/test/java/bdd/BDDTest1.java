@@ -14,7 +14,8 @@ public class BDDTest1 {
     BDDNode x =  tree.addVariable("x");
     BDDNode y =  tree.addVariable("y");
     BDDNode z = tree.addVariable("z");
-    tree.printDot((x.and(y)).or(z));
+    tree.printDot(x.and(y).or(z).not());
+    tree.printDot(x.not());
     }
 
 }

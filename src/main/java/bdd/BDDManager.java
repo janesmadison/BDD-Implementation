@@ -12,6 +12,7 @@ public class BDDManager
 {
 
 private WeakHashMap<BDDNode, WeakReference<BDDNode>> bddMap = new WeakHashMap<>();
+private WeakHashMap<BDDNode, WeakReference<BDDNode>> notCache = new WeakHashMap<>();
 
 private BDDNode TRUE = new BDDNode("true", null, null) {
 
@@ -83,6 +84,18 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
 	     return newNode;
 	 }
  
+ BDDNode applyNot(BDDNode bdd) {
+	 HashMap<BDDNode,BDDNode> cache = new HashMap<>(); 
+         if (bdd == TRUE) return FALSE;
+         if (bdd == FALSE) return TRUE;
+         BDDNode cached = cache.get(bdd);
+         if (cached != null)
+             return cached;
+         BDDNode result = mk(bdd.v, applyNot(bdd.low), applyNot(bdd.high));
+         cache.put(bdd, result);
+         return result;
+ }
+ 
 //Written by Christian Kästner (modified)
 //Can be used in conjunction with http://www.webgraphviz.com/ to print BDD
  public void printDot(BDDNode bdd) {
@@ -149,6 +162,10 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
   
   public BDDNode or(BDDNode other) {
 	  return lookupCache(OR.cache() , new BDDPair(this, other), () -> apply(OR, this, other));
+  }
+  
+  public BDDNode not() {
+	  return lookupCache(notCache, this, () -> applyNot(this));
   }
 
  }
