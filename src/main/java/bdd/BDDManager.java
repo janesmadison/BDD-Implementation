@@ -6,46 +6,35 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public class BDDManager
 {
 
-private WeakHashMap<BDDNode, WeakReference<BDDNode>> bddMap = new WeakHashMap<>();
-private WeakHashMap<BDDNode, WeakReference<BDDNode>> notCache = new WeakHashMap<>();
-
-private BDDNode TRUE = new BDDNode("true", null, null) {
-
-    @Override
-    public Boolean isLeafNode() {
-        return true;
-    }
-};
-
-private BDDNode FALSE = new BDDNode("false", null, null) {
-
-    @Override
-    public Boolean isLeafNode() {
-        return true;
-    }
-};
-
+private WeakHashMap<BDDInternal, WeakReference<BDDInternal>> internalMap = new WeakHashMap<>();
+private WeakHashMap<BDDTerminal, WeakReference<BDDTerminal>> terminalMap = new WeakHashMap(); //from terminal to terminal 
 
 
 //constructor
   public BDDManager() {
   }
   
- public BDDNode addVariable(String v) {
-	 return mk(v, FALSE, TRUE);
+  public <T> BDDInternal<T> choice(String cond, T left, T right) {
+	  return mk(cond, mkTerminal(left), mkTerminal(right));
+  }
+ 
+ private <T> BDDInternal<T> mk(String v, BDD<T> low, BDD<T> high) {
+	 if(low.isEquivalent(high)) {
+		 return (BDDInternal<T>) low;
+	 } 
+	 BDDInternal<T> newNode = new BDDInternal<T>(v, low, high);
+	return lookupCache(internalMap, newNode, () -> newNode);
  }
  
- private BDDNode mk(String v, BDDNode low, BDDNode high) {
-	 if(low.isEquivalent(high)) {
-		 return low;
-	 } 
-	BDDNode newNode = new BDDNode(v, low, high);
-	return lookupCache(bddMap, newNode, () -> newNode);
+ private <T> BDD<T> mkTerminal(T value) {
+	 BDDTerminal<T> newNode = new BDDTerminal<T>(value);
+	return lookupCache(terminalMap, newNode, () -> newNode);
  }
  
  //Written by Christian Kästner
@@ -63,129 +52,201 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
      return val;
  }
  
- BDDNode apply(Operator op, BDDNode one, BDDNode two) {
+ <T, R> BDD<R> apply(BiFunction<T,T,R> op, BDD<T> one, BDD<T> two) {
 	 
-	 HashMap<BDDPair,BDDNode> pairCache = new HashMap<>();
-	 	 BDDPair pair = new BDDPair(one, two);
-	     BDDNode found = pairCache.get(pair);
+	  HashMap<BDDPair<T>,BDD<R>> pairCache = new HashMap<>();
+	 	 BDDPair<T> pair = new BDDPair<T>(one, two);
+	 	 BDD<R> found = pairCache.get(pair);
 	     if (found != null)
 	         return found;
-	     BDDNode newNode;
-	     if (one.isLeafNode() && two.isLeafNode())
-	         newNode = op.applyOperator(one.isEquivalent(TRUE), two.isEquivalent(TRUE)) ? TRUE : FALSE;
-	     else if (one.v.equals(two.v))
-	         newNode = mk(one.v, apply(op, one.low, two.low), apply(op, one.high, two.high));
-	     else if (two.isLeafNode() || (one.v.compareTo(two.v) > 0))
-	         newNode = mk(one.v, apply(op, one.low, two), apply(op, one.high, two));
+	     BDD<R> newNode;
+	     if (one.isLeafNode() && two.isLeafNode()) {
+	    	 newNode = mkTerminal(op.apply(((BDDTerminal<T>)one).v, ((BDDTerminal<T>)two).v)); //creates a terminal node
+	     }
+	     else if (one.getOption().equals(two.getOption()))
+	         newNode = mk(one.getOption(), apply(op, one.getLow(), two.getLow()), apply(op, one.getHigh(), two.getLow()));
+	     else if (two.isLeafNode() || (one.getOption().compareTo(two.getOption()) > 0))
+	         newNode = mk(one.getOption(), apply(op, one.getLow(), two), apply(op, one.getHigh(), two));
 	     else
-	         newNode = mk(two.v, apply(op, one, two.low), apply(op, one, two.high));
+	         newNode = mk(two.getOption(), apply(op, one, two.getLow()), apply(op, one, two.getHigh()));
 
 	     pairCache.put(pair, newNode);
 	     return newNode;
 	 }
  
- BDDNode applyNot(BDDNode bdd) {
-	 HashMap<BDDNode,BDDNode> cache = new HashMap<>(); 
-         if (bdd == TRUE) return FALSE;
-         if (bdd == FALSE) return TRUE;
-         BDDNode cached = cache.get(bdd);
-         if (cached != null)
-             return cached;
-         BDDNode result = mk(bdd.v, applyNot(bdd.low), applyNot(bdd.high));
-         cache.put(bdd, result);
-         return result;
- }
  
 //Written by Christian Kästner (modified)
 //Can be used in conjunction with http://www.webgraphviz.com/ to print BDD
- public void printDot(BDDNode bdd) {
+ public <T> void printDot(BDD<T> bdd) {
 
      System.out.println("digraph G {");
+     //if leaf node getId() [shape=box, ....
      System.out.println("0 [shape=box, label=\"FALSE\", style=filled, shape=box, height=0.3, width=0.3];");
      System.out.println("1 [shape=box, label=\"TRUE\", style=filled, shape=box, height=0.3, width=0.3];");
-     Set<BDDNode> seen = new HashSet<>();
-     LinkedList<BDDNode> queue = new LinkedList<>();
+     Set<BDD<T>> seen = new HashSet<>();
+     LinkedList<BDD<T>> queue = new LinkedList<>();
      queue.add(bdd);
 
      while (!queue.isEmpty()) {
-         BDDNode b = queue.remove();
+    	 BDD<T> b = queue.remove();
          if (!(seen.contains(b)) && (!b.isLeafNode())) {
              seen.add(b);
-             System.out.println(b.getID() + " [label=\"" + b.v + "\"];");
-             System.out.println(b.getID() + " -> " + b.low.getID() + " [style=dotted];");
-             System.out.println(b.getID() + " -> " + b.high.getID() + " [style=filled];");
-             queue.add(b.low);
-             queue.add(b.high);
+             System.out.println(b.getID() + " [label=\"" + b.getOption() + "\"];");
+             System.out.println(b.getID() + " -> " + b.getLow().getID() + " [style=dotted];");
+             System.out.println(b.getID() + " -> " + b.getHigh().getID() + " [style=filled];");
+             queue.add(b.getLow());
+             queue.add(b.getHigh());
          }
 
      }
 
      System.out.println("}");
  }
-
+//=============================================================================================================================================
+ public interface BDD<T> {
+	 BDD<T> getHigh();
+	 int getID();
+	 BDD<T> getLow();
+	 String getOption(); //v and if terminal "" or null (whatever is lowest / last in ordering)
+	 public int getHash(); 
+     public boolean isEquivalent(BDD<T> other);
+     boolean isLeafNode();
+ }
  //=============================================================================================================================================
- public class BDDNode
+ public class BDDInternal<T> implements BDD<T>
  {
-   BDDNode high;
-   BDDNode low;
+   BDD<T> low;
+   BDD<T> high;
    String v; //variable name ex. x1
    int hash;
 
  //constructor
- BDDNode(String v, BDDNode low, BDDNode high){
+ BDDInternal(String v, BDD<T> low, BDD<T> high){
      this.high = high;
      this.low =low;
      this.v = v;
-     this.hash = v.hashCode() + 31 * (low == null ? 0 : low.hash) + 27 * (high == null ? 0 : high.hash);
+     this.hash = v.hashCode() + 31 * (low == null ? 0 : low.getHash()) + 27 * (high == null ? 0 : high.getHash());
+ }
+ 
+ public int getHash() {
+	 return hash;
  }
 
- Boolean isEquivalent(BDDNode other) {
- 	  if((this.high == other.high && this.low == other.low && this.v.equals(other.v)) || this == other) {
- 		return true;  
- 	  }
- 	  return false;
- 	}
+ @Override
+ public boolean isEquivalent(BDD<T> other) { 
+	 if(this == other) {
+		 return true;
+	 }
+	 if(other instanceof BDDInternal) {
+		 BDDInternal<T> otherNode = (BDDInternal<T>) other;
+		 if((this.high == other.getHigh() && this.low == other.getLow() && this.v.equals(otherNode.v))) {
+		 		return true;  
+	 	  }
+	 }
+	return false;
+ }
 
- Boolean isLeafNode(){
+ @Override
+public boolean isLeafNode(){
      return false;   
  }
 
-  int getID() {
-     if (this.isEquivalent(TRUE)) return 1;
-     else if (this.isEquivalent(FALSE)) return 0;
-     else return Math.abs(this.hash);
+ @Override
+ public int getID() {
+     return Math.abs(this.hash);
  }
-  
-  public BDDNode and(BDDNode other) {
-	  return lookupCache(AND.cache() , new BDDPair(this, other), () -> apply(AND, this, other));
-  }
-  
-  public BDDNode or(BDDNode other) {
-	  return lookupCache(OR.cache() , new BDDPair(this, other), () -> apply(OR, this, other));
-  }
-  
-  public BDDNode not() {
-	  return lookupCache(notCache, this, () -> applyNot(this));
-  }
+
+@Override
+public BDD<T> getHigh() {
+	return this.high;
+}
+
+@Override
+public BDD<T> getLow() {
+	return this.low;
+}
+
+@Override
+public String getOption() {
+	return v;
+}
 
  }
 //=======================================================================================================================================
- 
- private class BDDPair {
-	    private final BDDNode low, high;
+//=============================================================================================================================================
+public class BDDTerminal<T> implements BDD<T>
+{
+  T v;
+  int hash;
 
-	    BDDPair(BDDNode low, BDDNode high) {
+//constructor
+BDDTerminal(T v){
+    this.v = v;
+    this.hash = v.hashCode();
+}
+
+public int getHash() {
+	 return hash;
+}
+
+@Override
+public boolean isEquivalent(BDD<T> other) {
+	if(this == other) {
+		 return true;
+	 }
+	 if(other instanceof BDDTerminal) {
+		 BDDTerminal<T> otherNode = (BDDTerminal<T>) other;
+		 if((this.v == otherNode.v)) {
+		 		return true;  
+	 	  }
+	 }
+		 return false;
+	}
+
+@Override
+public boolean isLeafNode(){
+    return true;   
+}
+
+@Override
+public int getID() {
+	 return Math.abs(this.hash);
+}
+
+@Override
+public BDD<T> getHigh() {
+	return null;
+}
+
+@Override
+public BDD<T> getLow() {
+	return null;
+}
+
+@Override
+public String getOption() {
+	return v.toString();
+}
+
+}
+//=======================================================================================================================================
+ 
+ private class BDDPair<T> {
+	    private final BDD<T> low, high;
+
+	    BDDPair(BDD<T> low, BDD<T> high) {
 	        this.low = low;
 	        this.high = high;
 	    }
 
 	    public int hashCode() {
-	        return low.hash + high.hash;
+	        return low.getHash() + high.getHash();
 	    }
 
+	    @Override
 	    public boolean equals(Object t) {
 	        if (t instanceof BDDPair) {
-	            BDDPair that = (BDDPair) t;
+				BDDPair<T> that = (BDDPair<T>) t;
 	            return this.high.isEquivalent(that.high) && this.low.isEquivalent(that.low);
 	        }
 	        return false;
@@ -193,42 +254,4 @@ private BDDNode FALSE = new BDDNode("false", null, null) {
 	}
  
  //===========================================================================================================================================
- 
- private static abstract class Operator {
-	    public abstract boolean applyOperator(boolean left, boolean right);
-
-	    abstract WeakHashMap<BDDPair, WeakReference<BDDNode>> cache();
-
-	}
-
-	private static Operator AND = new Operator() {
-
-	    @Override
-	    public boolean applyOperator(boolean left, boolean right) {
-	        return left && right;
-	    }
-
-	    private WeakHashMap<BDDPair, WeakReference<BDDNode>> cache = new WeakHashMap<>();
-
-	    @Override
-	    WeakHashMap<BDDPair, WeakReference<BDDNode>> cache() {
-	        return cache;
-	    }
-	};
-
-	private static Operator OR = new Operator() {
-
-	    @Override
-	    public boolean applyOperator(boolean left, boolean right) {
-	        return left || right;
-	    }
-
-	    private WeakHashMap<BDDPair, WeakReference<BDDNode>> cache = new WeakHashMap<>();
-
-	    @Override
-	    WeakHashMap<BDDPair, WeakReference<BDDNode>> cache() {
-	        return cache;
-	    }
-	};
-//===========================================================================================================================================
 }
