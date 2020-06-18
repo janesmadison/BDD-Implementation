@@ -35,9 +35,9 @@ public interface V<T> {
      * <p>
      * fun may return null.
      */
-    <U> V<? extends U> map(@Nonnull Function<? super T, ? extends U> fun);
+    <U> V<U> map(@Nonnull Function<T, U> fun);
 
-    <U> V<? extends U> map(@Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun);
+    <U> V<U> map(@Nonnull BiFunction<FeatureExpr, T, U> fun);
 
     /**
      * select map: shorthand for x.select(ctx).map(fun)
@@ -48,22 +48,21 @@ public interface V<T> {
      * <p>
      * fun may return null.
      */
-	jj
     //     assert fun != null;
     //     return this.select(ctx).map(fun);
     // }
 
-    // default <U> V<? extends U> smap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun) {
+    // default <U> V<U> smap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, T, U> fun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     return this.select(ctx).map(fun);
     // }
 
-    // default <U> V<? extends U> smap(@Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull FeatureExpr ctx) {
+    // default <U> V<U> smap(@Nonnull BiFunction<FeatureExpr, T, U> fun, @Nonnull FeatureExpr ctx) {
     //     return smap(ctx, fun);
     // }
 
-    // default <U> V<? extends U> smap(@Nonnull Function<? super T, ? extends U> fun, @Nonnull FeatureExpr ctx) {
+    // default <U> V<U> smap(@Nonnull Function<T, U> fun, @Nonnull FeatureExpr ctx) {
     //     return smap(ctx, fun);
     // }
 
@@ -72,21 +71,21 @@ public interface V<T> {
      * to all values outside the restricted configuration space. Overloaded for the common case where
      * altFun is the identify function.
      */
-    // default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, ? extends U> fun, @Nonnull Function<? super T, ? extends U> altFun) {
+    // default <U> V<U> pmap(@Nonnull FeatureExpr ctx, @Nonnull Function<T, U> fun, @Nonnull Function<T, U> altFun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     assert altFun != null;
     //     return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
     // }
 
-    // default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> altFun) {
+    // default <U> V<U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, T, U> fun, @Nonnull BiFunction<FeatureExpr, T, U> altFun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     assert altFun != null;
     //     return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
     // }
 
-    // default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull Function<? super T, ? extends U> altFun) {
+    // default <U> V<U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, T, U> fun, @Nonnull Function<T, U> altFun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     assert altFun != null;
@@ -96,20 +95,20 @@ public interface V<T> {
     /**
      * @param fun may not return null, but One(null)
      */
-    <U> V<? extends U> flatMap(@Nonnull Function<? super T, V<? extends U>> fun);
+    <U> V<U> flatMap(@Nonnull Function<T, V<U>> fun);
 
-    <U> V<? extends U> flatMap(@Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun);
+    <U> V<U> flatMap(@Nonnull BiFunction<FeatureExpr, T, V<U>> fun);
 
     /**
      * see smap
      */
-    // default <U> V<? extends U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, V<? extends U>> fun) {
+    // default <U> V<U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<T, V<U>> fun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     return this.select(ctx).flatMap(fun);
     // }
 
-    // default <U> V<? extends U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun) {
+    // default <U> V<U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, T, V<U>> fun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     return this.select(ctx).flatMap(fun);
@@ -118,32 +117,32 @@ public interface V<T> {
     /**
      * alternative parameter order to simplify lifting
      */
-    // default <U> V<? extends U> sflatMap(@Nonnull Function<? super T, V<? extends U>> fun, @Nonnull FeatureExpr ctx) {
+    // default <U> V<U> sflatMap(@Nonnull Function<T, V<U>> fun, @Nonnull FeatureExpr ctx) {
     //     return sflatMap(ctx, fun);
     // }
 
-    // default <U> V<? extends U> sflatMap(@Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull FeatureExpr ctx) {
+    // default <U> V<U> sflatMap(@Nonnull BiFunction<FeatureExpr, T, V<U>> fun, @Nonnull FeatureExpr ctx) {
     //     return sflatMap(ctx, fun);
     // }
 
     // /**
     //  * see pmap
     //  */
-    // default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, V<? extends U>> fun, @Nonnull Function<? super T, V<? extends U>> altFun) {
+    // default <U> V<U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<T, V<U>> fun, @Nonnull Function<T, V<U>> altFun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     assert altFun != null;
     //     return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).flatMap(altFun));
     // }
 
-    // default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull Function<? super T, ? extends U> altFun) {
+    // default <U> V<U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, T, V<U>> fun, @Nonnull Function<T, U> altFun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     assert altFun != null;
     //     return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).map(altFun));
     // }
 
-    // default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> altFun) {
+    // default <U> V<U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, T, V<U>> fun, @Nonnull BiFunction<FeatureExpr, T, V<U>> altFun) {
     //     assert ctx != null;
     //     assert fun != null;
     //     assert altFun != null;
@@ -209,7 +208,7 @@ public interface V<T> {
         }
     }
 
-    static <U> V<? extends U> choice(@Nonnull FeatureExpr condition, @Nullable U a, @Nullable U b) {
+    static <U> V<U> choice(@Nonnull FeatureExpr condition, @Nullable U a, @Nullable U b) {
         assert condition != null;
         if (VCache.isContradiction(condition))
             return one(b);
@@ -219,7 +218,7 @@ public interface V<T> {
             return VImpl.choice(condition, a, b);
     }
 
-    static <U> V<? extends U> choice(@Nonnull FeatureExpr condition, Supplier<U> a, Supplier<U> b) {
+    static <U> V<U> choice(@Nonnull FeatureExpr condition, Supplier<U> a, Supplier<U> b) {
         assert condition != null;
         if (VCache.isContradiction(condition))
             return one(b.get());
