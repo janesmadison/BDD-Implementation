@@ -1,6 +1,6 @@
 package edu.cmu.cs.varex;
 
-import de.fosd.typechef.featureexpr.FeatureExpr;
+// import de.fosd.typechef.featureexpr.FeatureExpr;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,51 +48,50 @@ public interface V<T> {
      * <p>
      * fun may return null.
      */
-    default <U> V<? extends U> smap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, ? extends U> fun) {
-        assert ctx != null;
-        assert fun != null;
-        return this.select(ctx).map(fun);
-    }
+	jj
+    //     assert fun != null;
+    //     return this.select(ctx).map(fun);
+    // }
 
-    default <U> V<? extends U> smap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun) {
-        assert ctx != null;
-        assert fun != null;
-        return this.select(ctx).map(fun);
-    }
+    // default <U> V<? extends U> smap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     return this.select(ctx).map(fun);
+    // }
 
-    default <U> V<? extends U> smap(@Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull FeatureExpr ctx) {
-        return smap(ctx, fun);
-    }
+    // default <U> V<? extends U> smap(@Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull FeatureExpr ctx) {
+    //     return smap(ctx, fun);
+    // }
 
-    default <U> V<? extends U> smap(@Nonnull Function<? super T, ? extends U> fun, @Nonnull FeatureExpr ctx) {
-        return smap(ctx, fun);
-    }
+    // default <U> V<? extends U> smap(@Nonnull Function<? super T, ? extends U> fun, @Nonnull FeatureExpr ctx) {
+    //     return smap(ctx, fun);
+    // }
 
     /**
      * partially map: apply function fun to all values inside a restricted configuration space and apply function altFun
      * to all values outside the restricted configuration space. Overloaded for the common case where
      * altFun is the identify function.
      */
-    default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, ? extends U> fun, @Nonnull Function<? super T, ? extends U> altFun) {
-        assert ctx != null;
-        assert fun != null;
-        assert altFun != null;
-        return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
-    }
+    // default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, ? extends U> fun, @Nonnull Function<? super T, ? extends U> altFun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     assert altFun != null;
+    //     return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
+    // }
 
-    default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> altFun) {
-        assert ctx != null;
-        assert fun != null;
-        assert altFun != null;
-        return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
-    }
+    // default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> altFun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     assert altFun != null;
+    //     return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
+    // }
 
-    default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull Function<? super T, ? extends U> altFun) {
-        assert ctx != null;
-        assert fun != null;
-        assert altFun != null;
-        return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
-    }
+    // default <U> V<? extends U> pmap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, ? extends U> fun, @Nonnull Function<? super T, ? extends U> altFun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     assert altFun != null;
+    //     return V.choice(ctx, this.select(ctx).map(fun), this.select(VCache.not(ctx)).map(altFun));
+    // }
 
     /**
      * @param fun may not return null, but One(null)
@@ -104,79 +103,79 @@ public interface V<T> {
     /**
      * see smap
      */
-    default <U> V<? extends U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, V<? extends U>> fun) {
-        assert ctx != null;
-        assert fun != null;
-        return this.select(ctx).flatMap(fun);
-    }
+    // default <U> V<? extends U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, V<? extends U>> fun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     return this.select(ctx).flatMap(fun);
+    // }
 
-    default <U> V<? extends U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun) {
-        assert ctx != null;
-        assert fun != null;
-        return this.select(ctx).flatMap(fun);
-    }
+    // default <U> V<? extends U> sflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     return this.select(ctx).flatMap(fun);
+    // }
 
     /**
      * alternative parameter order to simplify lifting
      */
-    default <U> V<? extends U> sflatMap(@Nonnull Function<? super T, V<? extends U>> fun, @Nonnull FeatureExpr ctx) {
-        return sflatMap(ctx, fun);
-    }
+    // default <U> V<? extends U> sflatMap(@Nonnull Function<? super T, V<? extends U>> fun, @Nonnull FeatureExpr ctx) {
+    //     return sflatMap(ctx, fun);
+    // }
 
-    default <U> V<? extends U> sflatMap(@Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull FeatureExpr ctx) {
-        return sflatMap(ctx, fun);
-    }
+    // default <U> V<? extends U> sflatMap(@Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull FeatureExpr ctx) {
+    //     return sflatMap(ctx, fun);
+    // }
 
-    /**
-     * see pmap
-     */
-    default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, V<? extends U>> fun, @Nonnull Function<? super T, V<? extends U>> altFun) {
-        assert ctx != null;
-        assert fun != null;
-        assert altFun != null;
-        return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).flatMap(altFun));
-    }
+    // /**
+    //  * see pmap
+    //  */
+    // default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull Function<? super T, V<? extends U>> fun, @Nonnull Function<? super T, V<? extends U>> altFun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     assert altFun != null;
+    //     return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).flatMap(altFun));
+    // }
 
-    default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull Function<? super T, ? extends U> altFun) {
-        assert ctx != null;
-        assert fun != null;
-        assert altFun != null;
-        return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).map(altFun));
-    }
+    // default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull Function<? super T, ? extends U> altFun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     assert altFun != null;
+    //     return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).map(altFun));
+    // }
 
-    default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> altFun) {
-        assert ctx != null;
-        assert fun != null;
-        assert altFun != null;
-        return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).flatMap(altFun));
-    }
+    // default <U> V<? extends U> pflatMap(@Nonnull FeatureExpr ctx, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> fun, @Nonnull BiFunction<FeatureExpr, ? super T, V<? extends U>> altFun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     assert altFun != null;
+    //     return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).flatMap(altFun));
+    // }
 
     void foreach(@Nonnull Consumer<T> fun);
 
     void foreach(@Nonnull BiConsumer<FeatureExpr, T> fun);
 
-    default void sforeach(@Nonnull FeatureExpr ctx, @Nonnull Consumer<T> fun) {
-        assert ctx != null;
-        assert fun != null;
-        this.select(ctx).foreach(fun);
-    }
+    // default void sforeach(@Nonnull FeatureExpr ctx, @Nonnull Consumer<T> fun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     this.select(ctx).foreach(fun);
+    // }
 
-    default void sforeach(@Nonnull FeatureExpr ctx, @Nonnull BiConsumer<FeatureExpr, T> fun) {
-        assert ctx != null;
-        assert fun != null;
-        this.select(ctx).foreach(fun);
-    }
+    // default void sforeach(@Nonnull FeatureExpr ctx, @Nonnull BiConsumer<FeatureExpr, T> fun) {
+    //     assert ctx != null;
+    //     assert fun != null;
+    //     this.select(ctx).foreach(fun);
+    // }
 
-    /**
-     * alternative parameter order to simplify lifting
-     */
-    default void sforeach(@Nonnull Consumer<T> fun, @Nonnull FeatureExpr ctx) {
-        sforeach(ctx, fun);
-    }
+    // /**
+    //  * alternative parameter order to simplify lifting
+    //  */
+    // default void sforeach(@Nonnull Consumer<T> fun, @Nonnull FeatureExpr ctx) {
+    //     sforeach(ctx, fun);
+    // }
 
-    default void sforeach(@Nonnull BiConsumer<FeatureExpr, T> fun, @Nonnull FeatureExpr ctx) {
-        sforeach(ctx, fun);
-    }
+    // default void sforeach(@Nonnull BiConsumer<FeatureExpr, T> fun, @Nonnull FeatureExpr ctx) {
+    //     sforeach(ctx, fun);
+    // }
 
     FeatureExpr when(@Nonnull Predicate<T> condition, boolean filterNull);
 
@@ -252,44 +251,44 @@ public interface V<T> {
      * @param o V to be compared.
      * @return If the wrapped values are equal.
      */
-    boolean equalValue(Object o);
+    // boolean equalValue(Object o);
 
-    boolean hasThrowable();
+    // boolean hasThrowable();
 
-    V<T> simplified();
+    // V<T> simplified();
 
-    V<T> restrictInteractionDegree();
+    // V<T> restrictInteractionDegree();
 
-    static boolean isDegreeTooHigh(FeatureExpr fe) {
-        // With the new BDD impl., all BDDs have low degree solutions by construction
-        return false;
-    }
+    // static boolean isDegreeTooHigh(FeatureExpr fe) {
+    //     // With the new BDD impl., all BDDs have low degree solutions by construction
+    //     return false;
+    // }
 
     /**
      * We need a special version of FeatureExprLib to access the names of features
      *
      * Ideally we should get the minimal solution from BDD directly
      */
-    static String getOneLowDegreeSolution(FeatureExpr fe) {
-        return fe.getOneSolution();
-    }
+    // static String getOneLowDegreeSolution(FeatureExpr fe) {
+    //     return fe.getOneSolution();
+    // }
 
-    static String getAllLowDegreeSolutions(FeatureExpr fe) {
-        List<String> all = fe.getAllSolutions();
-        StringBuilder sb = new StringBuilder();
-        for (String s : all) {
-            if (sb.length() == 0) sb.append(s);
-            else sb.append(", " + s);
-        }
-        return sb.toString();
-    }
+    // static String getAllLowDegreeSolutions(FeatureExpr fe) {
+    //     List<String> all = fe.getAllSolutions();
+    //     StringBuilder sb = new StringBuilder();
+    //     for (String s : all) {
+    //         if (sb.length() == 0) sb.append(s);
+    //         else sb.append(", " + s);
+    //     }
+    //     return sb.toString();
+    // }
 
-    static List<String> intersect(List<String> base, List<String> l) {
-        List<String> ret = new LinkedList<>();
-        for (String s : base) {
-            if (l.contains(s))
-                ret.add(s);
-        }
-        return ret;
-    }
+    // static List<String> intersect(List<String> base, List<String> l) {
+    //     List<String> ret = new LinkedList<>();
+    //     for (String s : base) {
+    //         if (l.contains(s))
+    //             ret.add(s);
+    //     }
+    //     return ret;
+    // }
 }
