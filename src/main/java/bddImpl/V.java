@@ -1,29 +1,27 @@
-package edu.cmu.cs.varex;
+package bddImpl;
+
+import java.util.function.Function;
 
 // import de.fosd.typechef.featureexpr.FeatureExpr;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.*;
+//import javax.annotation.Nonnull;
 
 /**
  * central abstraction for conditional/variational values
  *
  * @param <T>
  */
-@Nonnull
+//@Nonnull
 public interface V<T> {
 
-    @Deprecated
-    T getOne();
-
-    @Deprecated
-    default T getOne(@Nonnull FeatureExpr ctx) {
-        assert ctx != null;
-        return select(ctx).getOne();
-    }
+//    @Deprecated
+//    T getOne();
+//
+//    @Deprecated
+//    default T getOne(@Nonnull FeatureExpr ctx) {
+//        assert ctx != null;
+//        return select(ctx).getOne();
+//    }
 
 
     /**
@@ -35,9 +33,10 @@ public interface V<T> {
      * <p>
      * fun may return null.
      */
-    <U> V<U> map(@Nonnull Function<T, U> fun);
+//    <U> V<U> map(@Nonnull Function<T, U> fun);
+    <U> V<U> map(Function<T, U> fun);
 
-    <U> V<U> map(@Nonnull BiFunction<FeatureExpr, T, U> fun);
+//    <U> V<U> map(@Nonnull BiFunction<FeatureExpr, T, U> fun);
 
     /**
      * select map: shorthand for x.select(ctx).map(fun)
@@ -95,9 +94,9 @@ public interface V<T> {
     /**
      * @param fun may not return null, but One(null)
      */
-    <U> V<U> flatMap(@Nonnull Function<T, V<U>> fun);
-
-    <U> V<U> flatMap(@Nonnull BiFunction<FeatureExpr, T, V<U>> fun);
+//    <U> V<U> flatMap(@Nonnull Function<T, V<U>> fun);
+//
+//    <U> V<U> flatMap(@Nonnull BiFunction<FeatureExpr, T, V<U>> fun);
 
     /**
      * see smap
@@ -149,9 +148,9 @@ public interface V<T> {
     //     return V.choice(ctx, this.select(ctx).flatMap(fun), this.select(VCache.not(ctx)).flatMap(altFun));
     // }
 
-    void foreach(@Nonnull Consumer<T> fun);
-
-    void foreach(@Nonnull BiConsumer<FeatureExpr, T> fun);
+//    void foreach(@Nonnull Consumer<T> fun);
+//
+//    void foreach(@Nonnull BiConsumer<FeatureExpr, T> fun);
 
     // default void sforeach(@Nonnull FeatureExpr ctx, @Nonnull Consumer<T> fun) {
     //     assert ctx != null;
@@ -176,7 +175,7 @@ public interface V<T> {
     //     sforeach(ctx, fun);
     // }
 
-    FeatureExpr when(@Nonnull Predicate<T> condition, boolean filterNull);
+//    FeatureExpr when(@Nonnull Predicate<T> condition, boolean filterNull);
 
     /**
      * select a subconfiguration space of V
@@ -184,65 +183,65 @@ public interface V<T> {
      * @param configSpace must be the same or smaller than the configuration
      *                    space provided by this V
      */
-    V<T> select(@Nonnull FeatureExpr configSpace);
+//    V<T> select(@Nonnull FeatureExpr configSpace);
 
     /**
      * reduces the configuration space of V. Resulting V covers at most the
      * provided configuration space. If it was original configuration space
      * was smaller, the smaller space remains
      */
-    V<T> reduce(@Nonnull FeatureExpr reducedConfigSpace);
+//    V<T> reduce(@Nonnull FeatureExpr reducedConfigSpace);
 
-    FeatureExpr getConfigSpace();
+//    FeatureExpr getConfigSpace();
 
-    @Deprecated
-    static <U> V<U> one(@Nullable U v) {
-        return one(VHelper.True(), v);
-    }
-
-    static <U> V<U> one(FeatureExpr configSpace, @Nullable U v) {
-        if (v instanceof V) {
-            return (V<U>) v;
-        } else {
-            return new One(configSpace, v);
-        }
-    }
-
-    static <U> V<U> choice(@Nonnull FeatureExpr condition, @Nullable U a, @Nullable U b) {
-        assert condition != null;
-        if (VCache.isContradiction(condition))
-            return one(b);
-        else if (condition.isTautology())
-            return one(a);
-        else
-            return VImpl.choice(condition, a, b);
-    }
-
-    static <U> V<U> choice(@Nonnull FeatureExpr condition, Supplier<U> a, Supplier<U> b) {
-        assert condition != null;
-        if (VCache.isContradiction(condition))
-            return one(b.get());
-        else if (condition.isTautology())
-            return one(a.get());
-        else
-            return VImpl.choice(condition, a.get(), b.get());
-    }
-
-    static V choice(@Nonnull FeatureExpr condition, @Nonnull V a, @Nonnull V b) {
-        assert a != null;
-        //TODO should not accept null values here. requires clean initialization of variational variables with One(null) instead of null
-        if (b == null)
-            b = V.one(null);
-        assert condition != null;
-        if (!VCache.isSatisfiable(condition))
-            return b;
-        else if (condition.isTautology())
-            return a;
-        else {
-//            return MTBDDVImpl.choiceV(condition, a, b);
-            return VImpl.choice(condition, a, b);
-        }
-    }
+//    @Deprecated
+//    static <U> V<U> one(@Nullable U v) {
+//        return one(VHelper.True(), v);
+//    }
+//
+//    static <U> V<U> one(FeatureExpr configSpace, @Nullable U v) {
+//        if (v instanceof V) {
+//            return (V<U>) v;
+//        } else {
+//            return new One(configSpace, v);
+//        }
+//    }
+//
+//    static <U> V<U> choice(@Nonnull FeatureExpr condition, @Nullable U a, @Nullable U b) {
+//        assert condition != null;
+//        if (VCache.isContradiction(condition))
+//            return one(b);
+//        else if (condition.isTautology())
+//            return one(a);
+//        else
+//            return VImpl.choice(condition, a, b);
+//    }
+//
+//    static <U> V<U> choice(@Nonnull FeatureExpr condition, Supplier<U> a, Supplier<U> b) {
+//        assert condition != null;
+//        if (VCache.isContradiction(condition))
+//            return one(b.get());
+//        else if (condition.isTautology())
+//            return one(a.get());
+//        else
+//            return VImpl.choice(condition, a.get(), b.get());
+//    }
+//
+//    static V choice(@Nonnull FeatureExpr condition, @Nonnull V a, @Nonnull V b) {
+//        assert a != null;
+//        //TODO should not accept null values here. requires clean initialization of variational variables with One(null) instead of null
+//        if (b == null)
+//            b = V.one(null);
+//        assert condition != null;
+//        if (!VCache.isSatisfiable(condition))
+//            return b;
+//        else if (condition.isTautology())
+//            return a;
+//        else {
+////            return MTBDDVImpl.choiceV(condition, a, b);
+//            return VImpl.choice(condition, a, b);
+//        }
+//    }
 
     /**
      * Compares equality of the wrapped value.

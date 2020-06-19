@@ -1,4 +1,4 @@
-package bdd;
+package bddImpl.vbdd;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -7,40 +7,43 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class BDDManager
+import bddImpl.V;
+
+public class VBDDManager
 {
 
-private WeakHashMap<BDDInternal, WeakReference<BDDInternal>> internalMap = new WeakHashMap<>();
-private WeakHashMap<BDDTerminal, WeakReference<BDDTerminal>> terminalMap = new WeakHashMap(); //from terminal to terminal 
+private WeakHashMap<VBDDInternal, WeakReference<VBDDInternal>> internalMap = new WeakHashMap<>();
+private WeakHashMap<VBDDTerminal, WeakReference<VBDDTerminal>> terminalMap = new WeakHashMap(); //from terminal to terminal 
 
 
 //constructor
-  public BDDManager() {
+  public VBDDManager() {
   }
   
-  public <T> BDDInternal<T> choice(String cond, T left, T right) {
+  public <T> VBDDInternal<T> choice(String cond, T left, T right) {
 	  return mk(cond, mkTerminal(left), mkTerminal(right));
   }
  
- private <T> BDDInternal<T> mk(String v, BDD<T> low, BDD<T> high) {
+ private <T> VBDDInternal<T> mk(String v, VBDD<T> low, VBDD<T> high) {
 	 if(low.isEquivalent(high)) {
-		 return (BDDInternal<T>) low;
+		 return (VBDDInternal<T>) low;
 	 } 
-	 BDDInternal<T> newNode = new BDDInternal<T>(v, low, high);
+	 VBDDInternal<T> newNode = new VBDDInternal<T>(v, low, high);
 	return lookupCache(internalMap, newNode, () -> newNode);
  }
  
- private <T> BDD<T> mkTerminal(T value) {
-	 BDDTerminal<T> newNode = new BDDTerminal<T>(value);
+ private <T> VBDD<T> mkTerminal(T value) {
+	 VBDDTerminal<T> newNode = new VBDDTerminal<T>(value);
 	return lookupCache(terminalMap, newNode, () -> newNode);
  }
  
  //Written by Christian Kästner
- private <K, V> V lookupCache(WeakHashMap<K, WeakReference<V>> cache, K key, Supplier<V> newValue) {
-     WeakReference<V> v = cache.get(key);
-     V val = null;
+ private <K, L> L lookupCache(WeakHashMap<K, WeakReference<L>> cache, K key, Supplier<L> newValue) {
+     WeakReference<L> v = cache.get(key);
+     L val = null;
      if (v != null) {
          val = v.get();
      }
@@ -48,20 +51,20 @@ private WeakHashMap<BDDTerminal, WeakReference<BDDTerminal>> terminalMap = new W
          return val;
 
      val = newValue.get();
-     cache.put(key, new WeakReference<V>(val));
+     cache.put(key, new WeakReference<L>(val));
      return val;
  }
  
- <T, R> BDD<R> apply(BiFunction<T,T,R> op, BDD<T> one, BDD<T> two) {
+ <T, R> VBDD<R> apply(BiFunction<T,T,R> op, VBDD<T> one, VBDD<T> two) {
 	 
-	  HashMap<BDDPair<T>,BDD<R>> pairCache = new HashMap<>();
-	 	 BDDPair<T> pair = new BDDPair<T>(one, two);
-	 	 BDD<R> found = pairCache.get(pair);
+	  HashMap<VBDDPair<T>,VBDD<R>> pairCache = new HashMap<>();
+	 	 VBDDPair<T> pair = new VBDDPair<T>(one, two);
+	 	 VBDD<R> found = pairCache.get(pair);
 	     if (found != null)
 	         return found;
-	     BDD<R> newNode;
+	     VBDD<R> newNode;
 	     if (one.isLeafNode() && two.isLeafNode()) {
-	    	 newNode = mkTerminal(op.apply(((BDDTerminal<T>)one).v, ((BDDTerminal<T>)two).v)); //creates a terminal node
+	    	 newNode = mkTerminal(op.apply(((VBDDTerminal<T>)one).v, ((VBDDTerminal<T>)two).v)); //creates a terminal node
 	     }
 	     else if (one.getOption().equals(two.getOption()))
 	         newNode = mk(one.getOption(), apply(op, one.getLow(), two.getLow()), apply(op, one.getHigh(), two.getLow()));
@@ -77,18 +80,18 @@ private WeakHashMap<BDDTerminal, WeakReference<BDDTerminal>> terminalMap = new W
  
 //Written by Christian Kästner (modified)
 //Can be used in conjunction with http://www.webgraphviz.com/ to print BDD
- public <T> void printDot(BDD<T> bdd) {
+ public <T> void printDot(VBDD<T> bdd) {
 
      System.out.println("digraph G {");
      //if leaf node getId() [shape=box, ....
      System.out.println("0 [shape=box, label=\"FALSE\", style=filled, shape=box, height=0.3, width=0.3];");
      System.out.println("1 [shape=box, label=\"TRUE\", style=filled, shape=box, height=0.3, width=0.3];");
-     Set<BDD<T>> seen = new HashSet<>();
-     LinkedList<BDD<T>> queue = new LinkedList<>();
+     Set<VBDD<T>> seen = new HashSet<>();
+     LinkedList<VBDD<T>> queue = new LinkedList<>();
      queue.add(bdd);
 
      while (!queue.isEmpty()) {
-    	 BDD<T> b = queue.remove();
+    	 VBDD<T> b = queue.remove();
          if (!(seen.contains(b)) && (!b.isLeafNode())) {
              seen.add(b);
              System.out.println(b.getID() + " [label=\"" + b.getOption() + "\"];");
@@ -103,25 +106,25 @@ private WeakHashMap<BDDTerminal, WeakReference<BDDTerminal>> terminalMap = new W
      System.out.println("}");
  }
 //=============================================================================================================================================
- public interface BDD<T> {
-	 BDD<T> getHigh();
+ public interface VBDD<T> extends V<T> {
+	 VBDD<T> getHigh();
 	 int getID();
-	 BDD<T> getLow();
+	 VBDD<T> getLow();
 	 String getOption(); //v and if terminal "" or null (whatever is lowest / last in ordering)
 	 public int getHash(); 
-     public boolean isEquivalent(BDD<T> other);
+     public boolean isEquivalent(VBDD<T> other);
      boolean isLeafNode();
  }
  //=============================================================================================================================================
- public class BDDInternal<T> implements BDD<T>
+ public class VBDDInternal<T> implements VBDD<T>
  {
-   BDD<T> low;
-   BDD<T> high;
+   VBDD<T> low;
+   VBDD<T> high;
    String v; //variable name ex. x1
    int hash;
 
  //constructor
- BDDInternal(String v, BDD<T> low, BDD<T> high){
+ VBDDInternal(String v, VBDD<T> low, VBDD<T> high){
      this.high = high;
      this.low =low;
      this.v = v;
@@ -133,12 +136,12 @@ private WeakHashMap<BDDTerminal, WeakReference<BDDTerminal>> terminalMap = new W
  }
 
  @Override
- public boolean isEquivalent(BDD<T> other) { 
+ public boolean isEquivalent(VBDD<T> other) { 
 	 if(this == other) {
 		 return true;
 	 }
-	 if(other instanceof BDDInternal) {
-		 BDDInternal<T> otherNode = (BDDInternal<T>) other;
+	 if(other instanceof VBDDInternal) {
+		 VBDDInternal<T> otherNode = (VBDDInternal<T>) other;
 		 if((this.high == other.getHigh() && this.low == other.getLow() && this.v.equals(otherNode.v))) {
 		 		return true;  
 	 	  }
@@ -157,12 +160,12 @@ public boolean isLeafNode(){
  }
 
 @Override
-public BDD<T> getHigh() {
+public VBDD<T> getHigh() {
 	return this.high;
 }
 
 @Override
-public BDD<T> getLow() {
+public VBDD<T> getLow() {
 	return this.low;
 }
 
@@ -171,16 +174,25 @@ public String getOption() {
 	return v;
 }
 
+@Override
+public <U> VBDD<U> map(Function<T, U> fun) {
+	//We had this returning type V<U> instead of type BDD<U> which caused some casting problems. After examing Christian's VBDDfactory,
+	// I realized he returned VNode<U> which extended V<U>. Essentially his VNode is my BDD interface. Also, I need help fixing printDot() (maybe)
+	VBDD<U> newBDD = (VBDD<U>) mk(this.getOption(), (VBDD<T>) this.getLow().map(fun), (VBDD<T>) this.getHigh().map(fun));
+	
+	return newBDD;
+}
+
  }
 //=======================================================================================================================================
 //=============================================================================================================================================
-public class BDDTerminal<T> implements BDD<T>
+public class VBDDTerminal<T> implements VBDD<T>
 {
   T v;
   int hash;
 
 //constructor
-BDDTerminal(T v){
+VBDDTerminal(T v){
     this.v = v;
     this.hash = v.hashCode();
 }
@@ -190,12 +202,12 @@ public int getHash() {
 }
 
 @Override
-public boolean isEquivalent(BDD<T> other) {
+public boolean isEquivalent(VBDD<T> other) {
 	if(this == other) {
 		 return true;
 	 }
-	 if(other instanceof BDDTerminal) {
-		 BDDTerminal<T> otherNode = (BDDTerminal<T>) other;
+	 if(other instanceof VBDDTerminal) {
+		 VBDDTerminal<T> otherNode = (VBDDTerminal<T>) other;
 		 if((this.v == otherNode.v)) {
 		 		return true;  
 	 	  }
@@ -214,12 +226,12 @@ public int getID() {
 }
 
 @Override
-public BDD<T> getHigh() {
+public VBDD<T> getHigh() {
 	return null;
 }
 
 @Override
-public BDD<T> getLow() {
+public VBDD<T> getLow() {
 	return null;
 }
 
@@ -228,13 +240,19 @@ public String getOption() {
 	return v.toString();
 }
 
+@Override
+public <U> VBDD<U> map(Function<T, U> fun) {
+	//you already know it is a terminal node 
+	return mkTerminal(fun.apply(this.v));
+}
+
 }
 //=======================================================================================================================================
  
- private class BDDPair<T> {
-	    private final BDD<T> low, high;
+ private class VBDDPair<T> {
+	    private final VBDD<T> low, high;
 
-	    BDDPair(BDD<T> low, BDD<T> high) {
+	    VBDDPair(VBDD<T> low, VBDD<T> high) {
 	        this.low = low;
 	        this.high = high;
 	    }
@@ -245,8 +263,8 @@ public String getOption() {
 
 	    @Override
 	    public boolean equals(Object t) {
-	        if (t instanceof BDDPair) {
-				BDDPair<T> that = (BDDPair<T>) t;
+	        if (t instanceof VBDDPair) {
+				VBDDPair<T> that = (VBDDPair<T>) t;
 	            return this.high.isEquivalent(that.high) && this.low.isEquivalent(that.low);
 	        }
 	        return false;
