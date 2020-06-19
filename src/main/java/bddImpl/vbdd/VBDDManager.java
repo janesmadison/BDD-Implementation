@@ -23,13 +23,13 @@ private WeakHashMap<VBDDTerminal, WeakReference<VBDDTerminal>> terminalMap = new
   public VBDDManager() {
   }
   
-  public <T> VBDDInternal<T> choice(String cond, T left, T right) {
+  public <T> VBDD<T> choice(String cond, T left, T right) {
 	  return mk(cond, mkTerminal(left), mkTerminal(right));
   }
  
- private <T> VBDDInternal<T> mk(String v, VBDD<T> low, VBDD<T> high) {
+ private <T> VBDD<T> mk(String v, VBDD<T> low, VBDD<T> high) {
 	 if(low.isEquivalent(high)) {
-		 return (VBDDInternal<T>) low;
+		 return (VBDD<T>) low;
 	 } 
 	 VBDDInternal<T> newNode = new VBDDInternal<T>(v, low, high);
 	return lookupCache(internalMap, newNode, () -> newNode);
@@ -83,9 +83,9 @@ private WeakHashMap<VBDDTerminal, WeakReference<VBDDTerminal>> terminalMap = new
  public <T> void printDot(VBDD<T> bdd) {
 
      System.out.println("digraph G {");
-     //if leaf node getId() [shape=box, ....
-     System.out.println("0 [shape=box, label=\"FALSE\", style=filled, shape=box, height=0.3, width=0.3];");
-     System.out.println("1 [shape=box, label=\"TRUE\", style=filled, shape=box, height=0.3, width=0.3];");
+//     //if leaf node getId() [shape=box, ....
+//     System.out.println("0 [shape=box, label=\"FALSE\", style=filled, shape=box, height=0.3, width=0.3];");
+//     System.out.println("1 [shape=box, label=\"TRUE\", style=filled, shape=box, height=0.3, width=0.3];");
      Set<VBDD<T>> seen = new HashSet<>();
      LinkedList<VBDD<T>> queue = new LinkedList<>();
      queue.add(bdd);
@@ -99,6 +99,8 @@ private WeakHashMap<VBDDTerminal, WeakReference<VBDDTerminal>> terminalMap = new
              System.out.println(b.getID() + " -> " + b.getHigh().getID() + " [style=filled];");
              queue.add(b.getLow());
              queue.add(b.getHigh());
+         } else if(!(seen.contains(b)) && (b.isLeafNode())) {
+        	 System.out.println(b.getID() + " [shape=box, label=\"" + b.getOption() + "\", style=filled, shape=box, height=0.3, width=0.3];");
          }
 
      }
