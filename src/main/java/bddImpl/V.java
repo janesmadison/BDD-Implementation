@@ -95,6 +95,7 @@ public interface V<T> {
      * @param fun may not return null, but One(null)
      */
 //    <U> V<U> flatMap(@Nonnull Function<T, V<U>> fun);
+      <U> V<U> flatMap(Function<T, V<U>> fun);
 //
 //    <U> V<U> flatMap(@Nonnull BiFunction<FeatureExpr, T, V<U>> fun);
 

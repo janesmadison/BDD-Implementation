@@ -4,6 +4,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.BiFunction;
@@ -17,14 +18,25 @@ public class VBDDManager
 
 private WeakHashMap<VBDDInternal, WeakReference<VBDDInternal>> internalMap = new WeakHashMap<>();
 private WeakHashMap<VBDDTerminal, WeakReference<VBDDTerminal>> terminalMap = new WeakHashMap(); //from terminal to terminal 
+private HashMap<String, Integer> symbolMap = new HashMap();
 
 
 //constructor
   public VBDDManager() {
   }
   
+  private static int symbolCounter = 0;
+  
   public <T> VBDD<T> choice(String cond, T left, T right) {
+	  if (!symbolMap.containsKey(cond)) {      //Keeps track of the order the variables are added in
+		  symbolCounter++;
+		  symbolMap.put(cond, symbolCounter);
+	  }
 	  return mk(cond, mkTerminal(left), mkTerminal(right));
+  }
+  
+  public <T> VBDD<T> one(T value) {
+	  return mkTerminal(value);
   }
  
  private <T> VBDD<T> mk(String v, VBDD<T> low, VBDD<T> high) {
@@ -77,18 +89,46 @@ private WeakHashMap<VBDDTerminal, WeakReference<VBDDTerminal>> terminalMap = new
 	     return newNode;
 	 }
  
+ private String min(String first, String second) {
+	 return symbolMap.get(first) < symbolMap.get(second) ? first : second;
+ }
+ 
+
+ public <T> V<T> ite_(V<Boolean> f, V<T> g, V<T> h) {
+     return ite((VBDD<Boolean>) f, (VBDD<T>) g, (VBDD<T>) h);
+ }
+
+ public <T> VBDD<T> ite(VBDD<Boolean> f, VBDD<T> g, VBDD<T> h) {
+     return _ite(f, g, h, new HashMap<>());
+ }
+
+ private <T> VBDD<T> _ite(VBDD<Boolean> f, VBDD<T> g, VBDD<T> h, Map<Triple<VBDD<Boolean>, VBDD<T>, VBDD<T>>, VBDD<T>> cache) {
+     if (f.getOption().equals("true")) return g;
+     if (f.getOption().equals("false")) return h;
+     if (g == h) return h;
+
+     Triple<VBDD<Boolean>, VBDD<T>, VBDD<T>> tr = new Triple<>(f, g, h);
+     if (cache.containsKey(tr))
+         return cache.get(tr);
+
+     String v = min(h.getOption(), min(f.getOption(), g.getOption()));
+     VBDD<T> t = _ite(v == f.getOption() ? f.getHigh() : f, v == g.getOption() ? g.getHigh() : g, v == h.getOption() ? h.getHigh() : h, cache);
+     VBDD<T> e = _ite(v == f.getOption() ? f.getLow() : f, v == g.getOption() ? g.getLow() : g, v == h.getOption() ? h.getLow() : h, cache);
+     if (t == e) return e;
+     VBDD<T> result = mk(v, e, t);
+     cache.put(tr, result);
+     return result;
+ }
+ 
  
 //Written by Christian Kästner (modified)
 //Can be used in conjunction with http://www.webgraphviz.com/ to print BDD
- public <T> void printDot(VBDD<T> bdd) {
+ public <T> void printDot(V<T> bdd) {
 
      System.out.println("digraph G {");
-//     //if leaf node getId() [shape=box, ....
-//     System.out.println("0 [shape=box, label=\"FALSE\", style=filled, shape=box, height=0.3, width=0.3];");
-//     System.out.println("1 [shape=box, label=\"TRUE\", style=filled, shape=box, height=0.3, width=0.3];");
      Set<VBDD<T>> seen = new HashSet<>();
      LinkedList<VBDD<T>> queue = new LinkedList<>();
-     queue.add(bdd);
+     queue.add((VBDD<T>) bdd);
 
      while (!queue.isEmpty()) {
     	 VBDD<T> b = queue.remove();
@@ -185,6 +225,12 @@ public <U> VBDD<U> map(Function<T, U> fun) {
 	return newBDD;
 }
 
+@Override
+public <U> VBDD<U> flatMap(Function<T, V<U>> fun) {
+	VBDD<U> newBDD = (VBDD<U>) mk(this.getOption(), (VBDD<T>) this.getLow().flatMap(fun), (VBDD<T>) this.getHigh().flatMap(fun));
+	return newBDD;
+}
+
  }
 //=======================================================================================================================================
 //=============================================================================================================================================
@@ -248,6 +294,11 @@ public <U> VBDD<U> map(Function<T, U> fun) {
 	return mkTerminal(fun.apply(this.v));
 }
 
+@Override
+public <U> V<U> flatMap(Function<T, V<U>> fun) {	
+	return fun.apply(this.v);
+}
+
 }
 //=======================================================================================================================================
  
@@ -274,4 +325,29 @@ public <U> VBDD<U> map(Function<T, U> fun) {
 	}
  
  //===========================================================================================================================================
+ 
+ public static class Triple<A, B, C> {
+     private final A a;
+     private final B b;
+     private final C c;
+
+     public Triple(A a, B b, C c) {
+         this.a = a;
+         this.b = b;
+         this.c = c;
+     }
+
+     public int hashCode() {
+         return a.hashCode() + b.hashCode() + c.hashCode();
+     }
+
+     public boolean equals(Object t) {
+         if (t instanceof Triple) {
+             Triple<A, B, C> that = (Triple<A, B, C>) t;
+             return this.a == that.a && this.b == that.b && this.c == that.c;
+         }
+         return false;
+     }
+ }
+ //============================================================================================================================================
 }

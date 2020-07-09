@@ -27,12 +27,14 @@ public class BDDTest {
 
     VBDDManager tree = new VBDDManager();
     VBDD<Integer> x =  tree.choice("x", 1, 0);
-    VBDD<Boolean> y =  tree.choice("y", false, true);
+  //  VBDD<Boolean> y =  tree.choice("y", false, true);
     
-    //assertEquals(x.flatMap(a -> y.map(b -> a + b)), tree.choice("x", tree.choice("y", 3, 1), tree.choice("y", 2, 0)));   
+  //  assertEquals(x.flatMap(a -> y.map(b -> a + b)), tree.choice("x", tree.choice("y", 3, 1), tree.choice("y", 2, 0)));   
+   // assertEquals(x.flatMap(a -> tree.one(a)));
+    tree.printDot( x.<Integer>flatMap(a -> tree.choice("z", a , a + 1)));
 //    tree.printDot(tree.choice("x", tree.choice("y", 3, 1), tree.choice("y", 2, 0)));
     // tree.printDot((VBDD<Integer>) x.map(a -> a + 2));
-     tree.printDot((VBDD<Boolean>) y.map(a -> a && true));
+//     tree.printDot((VBDD<Boolean>) y.map(a -> a && true));
     }
 
 }
